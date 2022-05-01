@@ -1,7 +1,6 @@
 package mailer
 
 import (
-	"DMarinuks/disk-usage-warner/logger"
 	"bytes"
 	"crypto/tls"
 	"fmt"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/DMarinuks/disk-usage-warner/logger"
 
 	"go.uber.org/zap"
 	gomail "gopkg.in/mail.v2"

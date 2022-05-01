@@ -1,9 +1,10 @@
 package hdd
 
 import (
-	"DMarinuks/disk-usage-warner/logger"
-	"DMarinuks/disk-usage-warner/mailer"
 	"fmt"
+
+	"github.com/DMarinuks/disk-usage-warner/logger"
+	"github.com/DMarinuks/disk-usage-warner/mailer"
 
 	human "github.com/dustin/go-humanize"
 	"github.com/shirou/gopsutil/disk"

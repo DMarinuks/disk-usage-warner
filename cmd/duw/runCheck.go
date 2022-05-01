@@ -1,7 +1,7 @@
 package main
 
 import (
-	disk "DMarinuks/disk-usage-warner/disk"
+	disk "github.com/DMarinuks/disk-usage-warner/disk"
 )
 
 type runCheck struct {

@@ -1,4 +1,4 @@
-module DMarinuks/disk-usage-warner
+module github.com/DMarinuks/disk-usage-warner
 
 go 1.18
 

@@ -1,10 +1,11 @@
 package main
 
 import (
-	"DMarinuks/disk-usage-warner/logger"
-	"DMarinuks/disk-usage-warner/mailer"
 	"fmt"
 	"os"
+
+	"github.com/DMarinuks/disk-usage-warner/logger"
+	"github.com/DMarinuks/disk-usage-warner/mailer"
 
 	"github.com/alecthomas/kong"
 	"github.com/joho/godotenv"
