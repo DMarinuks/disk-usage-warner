@@ -26,13 +26,13 @@ var cli struct {
 }
 
 func main() {
-	if err := DoMain(); err != nil {
+	if err := doMain(); err != nil {
 		fmt.Fprintf(os.Stderr, "disk usage warner err: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func DoMain() error {
+func doMain() error {
 	// load env file
 	godotenv.Load()
 
