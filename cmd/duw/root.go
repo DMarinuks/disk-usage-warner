@@ -11,8 +11,7 @@ import (
 )
 
 var cli struct {
-	LogLevel string `help:"Log level" default:"warning" env:"DUW_LOG_LEVEL"`
-	DevMode  bool   `help:"Set developer mode" default:"false" env:"DUW_DEV_MODE"`
+	LogLevel string `help:"Log level" default:"warning" env:"DUW_LOG_LEVEL" short:"l"`
 
 	Admins       []string `help:"Email addresses of the admins" env:"DUW_ADMINS"`
 	MailSubject  string   `default:"Disk Usage Warning" env:"DUW_MAIL_SUBJECT"`
