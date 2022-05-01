@@ -11,8 +11,9 @@ import (
 )
 
 var cli struct {
-	LogLevel     string   `help:"Log level" default:"warning" env:"DUW_LOG_LEVEL"`
-	DevMode      bool     `help:"Set developer mode" default:"false" env:"DUW_DEV_MODE"`
+	LogLevel string `help:"Log level" default:"warning" env:"DUW_LOG_LEVEL"`
+	DevMode  bool   `help:"Set developer mode" default:"false" env:"DUW_DEV_MODE"`
+
 	Admins       []string `help:"Email addresses of the admins" env:"DUW_ADMINS"`
 	MailSubject  string   `default:"Disk Usage Warning" env:"DUW_MAIL_SUBJECT"`
 	MailFrom     string   `env:"DUW_MAIL_FROM"`
@@ -21,7 +22,8 @@ var cli struct {
 	MailUsername string   `env:"DUW_MAIL_USERNAME"`
 	MailPassword string   `env:"DUW_MAIL_PASSWORD"`
 	MailTLSSkip  bool     `help:"Skip tls verify" env:"DUW_MAIL_TLS_SKIP"`
-	Check        runCheck `cmd:""`
+
+	Check runCheck `cmd:""`
 }
 
 func main() {
