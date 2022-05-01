@@ -5,8 +5,8 @@ import (
 )
 
 type runCheck struct {
-	Verbose   bool     `help:"Show results of check" default:"false" env:"HDDM_SHOW_RESULTS"`
-	Paths     []string `name:"path" help:"Disks to check, if empty, all will be checked." type:"path" env:"HDDM_PATHS"`
+	Verbose   bool     `help:"Show results of check" default:"false" env:"DUW_VERBOSE"`
+	Paths     []string `name:"path" help:"Disks to check, if empty, all will be checked." type:"path" env:"DUW_PATHS"`
 	Threshold int      `help:"Used percentage at witch a warning email should be send"`
 }
 
