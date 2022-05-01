@@ -11,5 +11,8 @@ type runCheck struct {
 }
 
 func (rc *runCheck) Run() error {
+	if !rc.Verbose && rc.Percentage == 0 {
+		rc.Verbose = true
+	}
 	return hdd.Check(rc.Verbose, rc.Paths, rc.Percentage)
 }
