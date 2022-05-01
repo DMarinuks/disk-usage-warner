@@ -72,7 +72,6 @@ func SendMail(warnings []*WarningInfo) error {
 	// This is only needed when SSL/TLS certificate is not valid on server.
 	// In production this should be set to false.
 	d.TLSConfig = &tls.Config{
-		ServerName:         mailCfg.Host,
 		InsecureSkipVerify: mailCfg.Insecure,
 	}
 
