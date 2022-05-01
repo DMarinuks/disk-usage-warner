@@ -24,9 +24,11 @@ type permissionError struct {
 	err    error
 }
 
-// Check - will check hdd storage
+// Check - will check disk usage and send warning email
+// if percentage was provided. Setting verbose as true
+// will print disk usage.
 func Check(verbose bool, paths []string, th int) error {
-	log := logger.Named("hdd")
+	log := logger.Named("disk")
 
 	formatter := "%-14s %7s %7s %7s %4s %s\n"
 	if verbose {
@@ -54,7 +56,8 @@ func Check(verbose bool, paths []string, th int) error {
 				})
 				continue
 			}
-			log.Panic("error getting disk usage", zap.String("device", device), zap.Error(err))
+			log.Error("error getting disk usage", zap.String("device", device), zap.Error(err))
+			return err
 		}
 
 		if s.Total == 0 {
@@ -84,16 +87,14 @@ func Check(verbose bool, paths []string, th int) error {
 	}
 
 	if len(multiError) > 0 {
+		// warn about errors
 		for _, me := range multiError {
-			log.Debug("error getting disk usage", zap.String("device", me.device), zap.Error(me.err))
+			log.Warn("error getting disk usage", zap.String("device", me.device), zap.Error(me.err))
 		}
 	}
 
 	if len(warningInfos) > 0 {
 		// send email
-		for _, warning := range warningInfos {
-			log.Debug("send email", zap.String("device", warning.Device), zap.String("percent", warning.Percent))
-		}
 		if err := mailer.SendMail(warningInfos); err != nil {
 			return err
 		}

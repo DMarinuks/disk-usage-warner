@@ -1,7 +1,7 @@
 package main
 
 import (
-	"DMarinuks/disk-usage-warner/hdd"
+	disk "DMarinuks/disk-usage-warner/disk"
 )
 
 type runCheck struct {
@@ -14,5 +14,5 @@ func (rc *runCheck) Run() error {
 	if !rc.Verbose && rc.Percentage == 0 {
 		rc.Verbose = true
 	}
-	return hdd.Check(rc.Verbose, rc.Paths, rc.Percentage)
+	return disk.Check(rc.Verbose, rc.Paths, rc.Percentage)
 }
