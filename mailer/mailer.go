@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/DMarinuks/disk-usage-warner/logger"
@@ -93,13 +92,7 @@ func loadTemplate(hostname string, warnings []*WarningInfo) (string, error) {
 		Host:     hostname,
 		Warnings: warnings,
 	}
-
-	workDir, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	t, err := template.ParseFiles(filepath.Join(workDir, "mailer", "warning.html"))
+	t, err := template.New("warning").Parse(warningHTML)
 	if err != nil {
 		return "", err
 	}
