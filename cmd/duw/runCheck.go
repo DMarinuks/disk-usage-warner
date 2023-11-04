@@ -1,7 +1,7 @@
 package main
 
 import (
-	disk "github.com/DMarinuks/disk-usage-warner/disk"
+	"github.com/DMarinuks/disk-usage-warner/internal/diskchecker"
 )
 
 type runCheck struct {
@@ -14,5 +14,5 @@ func (rc *runCheck) Run() error {
 	if !rc.Verbose && rc.Percentage == 0 {
 		rc.Verbose = true
 	}
-	return disk.Check(rc.Verbose, rc.Paths, rc.Percentage)
+	return diskchecker.Check(rc.Verbose, rc.Paths, rc.Percentage)
 }

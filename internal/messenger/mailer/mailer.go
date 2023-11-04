@@ -3,26 +3,18 @@ package mailer
 import (
 	"bytes"
 	"crypto/tls"
-	"fmt"
 	"html/template"
-	"os"
-	"strings"
 
-	"github.com/DMarinuks/disk-usage-warner/logger"
+	"github.com/DMarinuks/disk-usage-warner/internal/logger"
+	"github.com/DMarinuks/disk-usage-warner/internal/messenger/types"
 
 	"go.uber.org/zap"
 	gomail "gopkg.in/mail.v2"
 )
 
 var (
-	log     *zap.Logger
 	mailCfg *MailConfig
 )
-
-type WarningInfo struct {
-	Device  string
-	Percent string
-}
 
 type MailConfig struct {
 	From     string
@@ -35,38 +27,35 @@ type MailConfig struct {
 	Insecure bool
 }
 
-func Configure(cfg MailConfig) {
-	log = logger.Named("mailer")
-	mailCfg = &cfg
+type Mailer struct {
+	config MailConfig
+	log    *zap.Logger
 }
 
-func SendMail(warnings []*WarningInfo) error {
-	hostname, _ := os.Hostname()
-	hostname = strings.ToLower(strings.TrimSpace(hostname))
-	if len(hostname) == 0 {
-		return fmt.Errorf("empty hostname is invalid")
-	}
+var _ types.Messenger = (*Mailer)(nil)
 
-	m := gomail.NewMessage()
+func New(cfg MailConfig) *Mailer {
+	mailer := new(Mailer)
+	mailer.config = cfg
+	mailer.log = logger.Named("mailer")
 
-	// Set E-Mail sender
-	m.SetHeader("From", mailCfg.From)
+	return mailer
+}
 
-	// Set E-Mail receivers
-	m.SetHeader("To", mailCfg.Admins...)
+func (m *Mailer) Send(hostname string, warnings []*types.WarningInfo) error {
+	mail := gomail.NewMessage()
 
-	// Set E-Mail subject
-	m.SetHeader("Subject", mailCfg.Subject)
+	mail.SetHeader("From", mailCfg.From)
+	mail.SetHeader("To", mailCfg.Admins...)
+	mail.SetHeader("Subject", mailCfg.Subject)
 
-	// Set E-Mail body.
 	body, err := loadTemplate(hostname, warnings)
 	if err != nil {
-		log.Error("error loading html template", zap.Error(err))
+		m.log.Error("error loading html template", zap.Error(err))
 		return err
 	}
-	m.SetBody("text/html; charset=UTF-8", body)
+	mail.SetBody("text/html; charset=UTF-8", body)
 
-	// Settings for SMTP server
 	d := gomail.NewDialer(mailCfg.Host, mailCfg.Port, mailCfg.Username, mailCfg.Password)
 
 	// This is only needed when SSL/TLS certificate is not valid on server.
@@ -76,19 +65,18 @@ func SendMail(warnings []*WarningInfo) error {
 		InsecureSkipVerify: mailCfg.Insecure,
 	}
 
-	// Now send E-Mail
-	if err := d.DialAndSend(m); err != nil {
-		log.Error("error dial and send", zap.Error(err))
+	if err := d.DialAndSend(mail); err != nil {
+		m.log.Error("error dial and send", zap.Error(err))
 		return err
 	}
 
 	return nil
 }
 
-func loadTemplate(hostname string, warnings []*WarningInfo) (string, error) {
+func loadTemplate(hostname string, warnings []*types.WarningInfo) (string, error) {
 	templateData := struct {
 		Host     string
-		Warnings []*WarningInfo
+		Warnings []*types.WarningInfo
 	}{
 		Host:     hostname,
 		Warnings: warnings,

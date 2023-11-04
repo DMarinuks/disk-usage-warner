@@ -1,28 +1,27 @@
-package hdd
+package diskchecker
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
-	"github.com/DMarinuks/disk-usage-warner/logger"
-	"github.com/DMarinuks/disk-usage-warner/mailer"
+	"github.com/DMarinuks/disk-usage-warner/internal/logger"
+	"github.com/DMarinuks/disk-usage-warner/internal/messenger/types"
 
-	human "github.com/dustin/go-humanize"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/shirou/gopsutil/disk"
 	"go.uber.org/zap"
 )
 
-func strInSlice(n string, s []string) bool {
-	for _, ss := range s {
-		if ss == n {
-			return true
-		}
-	}
-	return false
-}
-
 type permissionError struct {
 	device string
 	err    error
+}
+
+var defaultMessenger types.Messenger
+
+func SetDefaultMessenger(messenger types.Messenger) {
+	defaultMessenger = messenger
 }
 
 // Check - will check disk usage and send warning email
@@ -31,13 +30,23 @@ type permissionError struct {
 func Check(verbose bool, paths []string, th int) error {
 	log := logger.Named("disk")
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("error getting hostname: %w", err)
+	}
+
+	hostname = strings.ToLower(strings.TrimSpace(hostname))
+	if len(hostname) == 0 {
+		return fmt.Errorf("empty hostname is invalid")
+	}
+
 	formatter := "%-14s %7s %7s %7s %4s %s\n"
 	if verbose {
 		fmt.Printf(formatter, "Filesystem", "Size", "Used", "Avail", "Use%", "Mounted on")
 	}
 
 	var multiError []permissionError
-	var warningInfos []*mailer.WarningInfo
+	var warningInfos []*types.WarningInfo
 
 	parts, _ := disk.Partitions(true)
 	for _, p := range parts {
@@ -70,9 +79,9 @@ func Check(verbose bool, paths []string, th int) error {
 		if verbose {
 			fmt.Printf(formatter,
 				s.Fstype,
-				human.Bytes(s.Total),
-				human.Bytes(s.Used),
-				human.Bytes(s.Free),
+				humanize.Bytes(s.Total),
+				humanize.Bytes(s.Used),
+				humanize.Bytes(s.Free),
 				percent,
 				p.Mountpoint,
 			)
@@ -80,7 +89,7 @@ func Check(verbose bool, paths []string, th int) error {
 
 		if th != 0 && float64(th) <= s.UsedPercent {
 			// collect threshold warnings
-			warningInfos = append(warningInfos, &mailer.WarningInfo{
+			warningInfos = append(warningInfos, &types.WarningInfo{
 				Device:  device,
 				Percent: percent,
 			})
@@ -88,18 +97,27 @@ func Check(verbose bool, paths []string, th int) error {
 	}
 
 	if len(multiError) > 0 {
-		// warn about errors
 		for _, me := range multiError {
 			log.Warn("error getting disk usage", zap.String("device", me.device), zap.Error(me.err))
 		}
 	}
 
 	if len(warningInfos) > 0 {
-		// send email
-		if err := mailer.SendMail(warningInfos); err != nil {
-			return err
+		log.Debug("sending notification", zap.Any("warnings", warningInfos))
+
+		if err := defaultMessenger.Send(hostname, warningInfos); err != nil {
+			log.Error("error sending notification", zap.Error(err))
 		}
 	}
 
 	return nil
+}
+
+func strInSlice(n string, s []string) bool {
+	for _, ss := range s {
+		if ss == n {
+			return true
+		}
+	}
+	return false
 }
