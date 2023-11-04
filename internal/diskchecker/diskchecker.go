@@ -24,7 +24,7 @@ func SetDefaultMessenger(messenger types.Messenger) {
 	defaultMessenger = messenger
 }
 
-// Check - will check disk usage and send warning email
+// Check - will check disk usage and sends warnings
 // if percentage was provided. Setting verbose as true
 // will print disk usage.
 func Check(verbose bool, paths []string, th int) error {
@@ -51,14 +51,12 @@ func Check(verbose bool, paths []string, th int) error {
 	parts, _ := disk.Partitions(true)
 	for _, p := range parts {
 		device := p.Mountpoint
-		// if paths were specified and path not in slice, skip
 		if len(paths) != 0 && !strInSlice(device, paths) {
 			continue
 		}
 
 		s, err := disk.Usage(device)
 		if err != nil {
-			// ignore permission errors
 			if err.Error() == "permission denied" {
 				multiError = append(multiError, permissionError{
 					device: device,
@@ -74,7 +72,6 @@ func Check(verbose bool, paths []string, th int) error {
 			continue
 		}
 
-		// log.Debug("percentage", zap.String("device", device), zap.Float64("percent", s.UsedPercent))
 		percent := fmt.Sprintf("%2.f%%", s.UsedPercent)
 		if verbose {
 			fmt.Printf(formatter,
@@ -88,7 +85,6 @@ func Check(verbose bool, paths []string, th int) error {
 		}
 
 		if th != 0 && float64(th) <= s.UsedPercent {
-			// collect threshold warnings
 			warningInfos = append(warningInfos, &types.WarningInfo{
 				Device:  device,
 				Percent: percent,
